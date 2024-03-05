@@ -258,16 +258,17 @@ public class FileServiceImpl implements FileService {
 	public void writeInFile(File file, BufferedWriter writer) {
 		try {
 			BufferedReader reader = new BufferedReader(new FileReader(file));
-			writer.write(file.getName()+"\n--------------------------\n\n");
+			writer.write(file.getName() + "\n--------------------------\n\n");
 			String line = reader.readLine();
 			while (line != null) {
 
 				boolean nextLine = true;
-				if (line.contains("SimpleAsyncTaskExecutor") && line.contains("ERROR")) {
+				if ((line.contains("SimpleAsyncTaskExecutor") && line.contains("ERROR"))
+						|| (line.contains("scheduling") && line.contains("ERROR"))
+						|| (line.contains("main") && line.contains("ERROR"))) {
 					this.data = true;
 					String[] words = line.split(" ");
-					writer.write("Time	: " + words[0] + "\nThread	: " + words[1] + "\nUserId	: " + " "
-							+ "\nError	: ");
+					writer.write("Time	: " + words[0] + "\nThread	: " + words[1] + "\nError	: ");
 					for (int i = 5; i < words.length; i++) {
 						writer.write(words[i] + " ");
 					}
@@ -287,53 +288,13 @@ public class FileServiceImpl implements FileService {
 				else if (line.contains("setar") && line.contains("ERROR")) {
 					this.data = true;
 					String[] words = line.split(" ");
-					writer.write("Time	: " + words[0] + "\nUserName	: " + words[2] + "\nURL	: " + words[4]
+					writer.write("Time	: " + words[0] + "\nUserId	: " + words[2] + "\nURL	: " + words[4]
 							+ "\nError	: ");
 					for (int i = 8; i < words.length; i++) {
 						writer.write(words[i] + " ");
 					}
 					for (int i = 0; i < 18; i++) {
 						writer.write("\n" + "	" + reader.readLine());
-					}
-					writer.write("\n\n");
-				}
-
-				else if (line.contains("scheduling") && line.contains("ERROR")) {
-					this.data = true;
-					String[] words = line.split(" ");
-					writer.write("Time	: " + words[0] + "\nThread	: " + words[1] + "\nError	: ");
-					for (int i = 5; i < words.length; i++) {
-						writer.write(words[i] + " ");
-					}
-					for (int i = 0; i < 4; i++) {
-						if ((line = reader.readLine()) != null) {
-							if (line.contains("INFO") || line.contains("WARN") || line.contains("ERROR")
-									|| line.contains("DEBUG") || line.contains("FATAL") || line.contains("TRACE")) {
-								nextLine = false;
-								break;
-							}
-							writer.write("\n	" + line);
-						}
-					}
-					writer.write("\n\n");
-				}
-
-				else if (line.contains("main") && line.contains("ERROR")) {
-					this.data = true;
-					String[] words = line.split(" ");
-					writer.write("Time	: " + words[0] + "\nThread	: " + words[1] + "\nError	: ");
-					for (int i = 5; i < words.length; i++) {
-						writer.write(words[i] + " ");
-					}
-					for (int i = 0; i < 4; i++) {
-						if ((line = reader.readLine()) != null) {
-							if (line.contains("INFO") || line.contains("WARN") || line.contains("ERROR")
-									|| line.contains("DEBUG") || line.contains("FATAL") || line.contains("TRACE")) {
-								nextLine = false;
-								break;
-							}
-							writer.write("\n	" + line);
-						}
 					}
 					writer.write("\n\n");
 				}
@@ -376,7 +337,6 @@ public class FileServiceImpl implements FileService {
 			MimeMessageHelper mimeMessageHelper = new MimeMessageHelper(mimeMessage, true);
 			String[] emailTo = fileDto.getEmailTo().toArray(String[]::new);
 			mimeMessageHelper.setTo(emailTo);
-			System.out.println();
 			String[] emailCc = fileDto.getEmailCc().toArray(String[]::new);
 			mimeMessageHelper.setCc(emailCc);
 			mimeMessageHelper.setSubject(fileDto.getSubject());
@@ -391,6 +351,5 @@ public class FileServiceImpl implements FileService {
 		}
 
 	}
-
 
 }
