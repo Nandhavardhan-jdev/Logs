@@ -302,13 +302,12 @@ public class FileServiceImpl implements FileService {
 			mimeMessageHelper.setCc(emailCc);
 			mimeMessageHelper.setSubject(fileDto.getSubject());
 			mimeMessageHelper.setText(fileDto.getBody());
-			FileSystemResource fileSystemResource = new FileSystemResource(file);
-			mimeMessageHelper.addAttachment(fileSystemResource.getFilename(), fileSystemResource);
+			mimeMessageHelper.addAttachment(file.getName(), file);
 			javaMailSender.send(mimeMessage);
-			System.out.println("mail sended");
+			System.out.println("mail sended ----------------");
 		} catch (MessagingException e) {
 			e.printStackTrace();
-			throw new RuntimeException("not sended");
+			throw new RuntimeException("mail not sended");
 		}
 
 	}
