@@ -48,19 +48,20 @@ public class FileServiceImpl implements FileService {
 
 	public InputStreamResource errorLevel(MultipartFile file) {
 		try {
-			BufferedReader reader = new BufferedReader(new InputStreamReader(file.getInputStream()));
+			data = false;
 			File file2 = new File("C:\\Users\\Admin\\Desktop\\Logs\\outputs\\" + file.getOriginalFilename());
 			BufferedWriter writer = new BufferedWriter(new FileWriter(file2));
-			boolean data = false;
+			BufferedReader reader = new BufferedReader(new InputStreamReader(file.getInputStream()));
 			String line = reader.readLine();
 			while (line != null) {
 
 				boolean nextLine = true;
-				if (line.contains("SimpleAsyncTaskExecutor") && line.contains("ERROR")) {
-					data = true;
+				if ((line.contains("SimpleAsyncTaskExecutor") && line.contains("ERROR"))
+						|| (line.contains("scheduling") && line.contains("ERROR"))
+						|| (line.contains("main") && line.contains("ERROR"))) {
+					this.data = true;
 					String[] words = line.split(" ");
-					writer.write("Time	: " + words[0] + "\nThread	: " + words[1] + "\nUserId	: " + " "
-							+ "\nError	: ");
+					writer.write("Time	: " + words[0] + "\nThread	: " + words[1] + "\nError	: ");
 					for (int i = 5; i < words.length; i++) {
 						writer.write(words[i] + " ");
 					}
@@ -87,46 +88,6 @@ public class FileServiceImpl implements FileService {
 					}
 					for (int i = 0; i < 18; i++) {
 						writer.write("\n" + "	" + reader.readLine());
-					}
-					writer.write("\n\n");
-				}
-
-				else if (line.contains("scheduling") && line.contains("ERROR")) {
-					data = true;
-					String[] words = line.split(" ");
-					writer.write("Time	: " + words[0] + "\nThread	: " + words[1] + "\nError	: ");
-					for (int i = 5; i < words.length; i++) {
-						writer.write(words[i] + " ");
-					}
-					for (int i = 0; i < 4; i++) {
-						if ((line = reader.readLine()) != null) {
-							if (line.contains("INFO") || line.contains("WARN") || line.contains("ERROR")
-									|| line.contains("DEBUG") || line.contains("FATAL") || line.contains("TRACE")) {
-								nextLine = false;
-								break;
-							}
-							writer.write("\n	" + line);
-						}
-					}
-					writer.write("\n\n");
-				}
-
-				else if (line.contains("main") && line.contains("ERROR")) {
-					data = true;
-					String[] words = line.split(" ");
-					writer.write("Time	: " + words[0] + "\nThread	: " + words[1] + "\nError	: ");
-					for (int i = 5; i < words.length; i++) {
-						writer.write(words[i] + " ");
-					}
-					for (int i = 0; i < 4; i++) {
-						if ((line = reader.readLine()) != null) {
-							if (line.contains("INFO") || line.contains("WARN") || line.contains("ERROR")
-									|| line.contains("DEBUG") || line.contains("FATAL") || line.contains("TRACE")) {
-								nextLine = false;
-								break;
-							}
-							writer.write("\n	" + line);
-						}
 					}
 					writer.write("\n\n");
 				}
