@@ -12,6 +12,9 @@ public class FileDto {
 	private List<String> emailCc;
 	private String subject;
 	private String body;
+	private String inputLoc;
+	private String outputLoc;
+	private String errorPattern;
 	
 	public String getServerName() {
 		return serverName;
@@ -60,6 +63,24 @@ public class FileDto {
 	}
 	public void setBody(String body) {
 		this.body = body;
+	}
+	public String getInputLoc() {
+		return inputLoc;
+	}
+	public void setInputLoc(String inputLoc) {
+		this.inputLoc = inputLoc;
+	}
+	public String getOutputLoc() {
+		return outputLoc;
+	}
+	public void setOutputLoc(String outputLoc) {
+		this.outputLoc = outputLoc;
+	}
+	public String getErrorPattern() {
+		return errorPattern;
+	}
+	public void setErrorPattern(String errorPattern) {
+		this.errorPattern = errorPattern;
 	}
 	
 }

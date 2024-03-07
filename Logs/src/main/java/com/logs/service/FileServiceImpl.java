@@ -33,6 +33,7 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.logs.config.Conf;
 import com.logs.dto.FileDto;
 
 import jakarta.mail.MessagingException;
@@ -45,6 +46,9 @@ public class FileServiceImpl implements FileService {
 	JavaMailSender javaMailSender;
 
 	boolean data;
+	
+	@Autowired
+	Conf conf;
 
 	public InputStreamResource errorLevel(MultipartFile file) {
 		try {
@@ -133,14 +137,14 @@ public class FileServiceImpl implements FileService {
 		data = false;
 		String serverName = fileDto.getServerName();
 		String date = fileDto.getDate();
-		List<String> paths = searchFiles(serverName, date);
+		List<String> paths = searchFiles(serverName, date, fileDto);
 		try {
 			if (!paths.isEmpty()) {
 				File file = new File(
-						"C:\\Users\\Admin\\Desktop\\Logs\\output2\\" + "titan-" + serverName + "." + date + ".log");
+						fileDto.getOutputLoc() + File.separator + "titan-" + serverName + "." + date + ".log");
 				BufferedWriter writer;
 				writer = new BufferedWriter(new FileWriter(file));
-				paths.forEach(path -> writeInFile(new File(path), writer));
+				paths.forEach(path -> writeInFile(new File(path), writer, fileDto));
 				writer.close();
 				if (this.data) {
 					InputStreamResource isr = new InputStreamResource(new FileInputStream(file));
@@ -169,13 +173,13 @@ public class FileServiceImpl implements FileService {
 		Iterator<String> dIterator = dates.iterator();
 		try {
 			File file = new File(
-					"C:\\Users\\Admin\\Desktop\\Logs\\output2\\" + "titan-" + serverNames + "." + dates + ".log");
+					fileDto.getOutputLoc() + File.separator + "titan-" + serverNames + "." + dates + ".log");
 			BufferedWriter writer;
 			writer = new BufferedWriter(new FileWriter(file));
 			while (sIterator.hasNext()) {
-				List<String> paths = searchFiles(sIterator.next(), dIterator.next());
+				List<String> paths = searchFiles(sIterator.next(), dIterator.next(), fileDto);
 				if (!paths.isEmpty()) {
-					paths.forEach(path -> writeInFile(new File(path), writer));
+					paths.forEach(path -> writeInFile(new File(path), writer, fileDto));
 				}
 			}
 			writer.close();
@@ -195,17 +199,17 @@ public class FileServiceImpl implements FileService {
 		}
 	}
 
-	public List<String> searchFiles(String serverName, String date) {
+	public List<String> searchFiles(String serverName, String date, FileDto fileDto) {
 		LocalDate currentDate = LocalDate.now();
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 		List<String> paths;
 		try {
 			if (date.contentEquals(currentDate.format(formatter))) {
-				paths = Files.list(Paths.get("C:\\Users\\Admin\\Desktop\\Logs\\All logs")).map(Path::toString)
+				paths = Files.list(Paths.get(fileDto.getInputLoc())).map(Path::toString)
 						.filter(file -> file.contains("titan-" + serverName + ".log")).collect(Collectors.toList());
 				paths.forEach(System.out::println);
 			} else {
-				paths = Files.list(Paths.get("C:\\Users\\Admin\\Desktop\\Logs\\All logs")).map(Path::toString)
+				paths = Files.list(Paths.get(fileDto.getInputLoc())).map(Path::toString)
 						.filter(file -> file.contains(serverName) && file.contains(date)).collect(Collectors.toList());
 				paths.forEach(System.out::println);
 			}
@@ -216,7 +220,14 @@ public class FileServiceImpl implements FileService {
 		}
 	}
 
-	public void writeInFile(File file, BufferedWriter writer) {
+	public void writeInFile(File file, BufferedWriter writer, FileDto fileDto) {
+		String logLevel = conf.getLogLevel();
+		String errorLog = conf.getErrorLog();
+		String infoLog = conf.getInfoLog();
+		String warnLog = conf.getWarnLog();
+		String debugLog = conf.getDebugLog();
+		String fatalLog = conf.getFatalLog();
+		String traceLog = conf.getTraceLog();
 		try {
 			BufferedReader reader = new BufferedReader(new FileReader(file));
 			writer.write(file.getName() + "\n--------------------------\n\n");
@@ -224,9 +235,9 @@ public class FileServiceImpl implements FileService {
 			while (line != null) {
 
 				boolean nextLine = true;
-				if ((line.contains("SimpleAsyncTaskExecutor") && line.contains("ERROR"))
-						|| (line.contains("scheduling") && line.contains("ERROR"))
-						|| (line.contains("main") && line.contains("ERROR"))) {
+				if ((line.contains(conf.getSimpleAsyncTaskExecutor()) && line.contains(logLevel))
+						|| (line.contains(conf.getScheduling()) && line.contains(logLevel))
+						|| (line.contains(conf.getMain()) && line.contains(logLevel))) {
 					this.data = true;
 					String[] words = line.split(" ");
 					writer.write("Time	: " + words[0] + "\nThread	: " + words[1] + "\nError	: ");
@@ -235,8 +246,8 @@ public class FileServiceImpl implements FileService {
 					}
 					for (int i = 0; i < 4; i++) {
 						if ((line = reader.readLine()) != null) {
-							if (line.contains("INFO") || line.contains("WARN") || line.contains("ERROR")
-									|| line.contains("DEBUG") || line.contains("FATAL") || line.contains("TRACE")) {
+							if (line.contains(infoLog) || line.contains(warnLog) || line.contains(errorLog)
+									|| line.contains(debugLog) || line.contains(fatalLog) || line.contains(traceLog)) {
 								nextLine = false;
 								break;
 							}
@@ -246,7 +257,7 @@ public class FileServiceImpl implements FileService {
 					writer.write("\n\n");
 				}
 
-				else if (line.contains("setar") && line.contains("ERROR")) {
+				else if (line.contains(conf.getSetar()) && line.contains(logLevel)) {
 					this.data = true;
 					String[] words = line.split(" ");
 					writer.write("Time	: " + words[0] + "\nUserId	: " + words[2] + "\nURL	: " + words[4]
@@ -260,7 +271,8 @@ public class FileServiceImpl implements FileService {
 					writer.write("\n\n");
 				}
 
-				else if (line.contains("ERROR")) {
+				else if ((line.contains(fileDto.getErrorPattern()) && line.contains(logLevel))
+						|| line.contains(logLevel)) {
 					this.data = true;
 					String[] words = line.split(" ");
 					writer.write("Time	: " + words[0] + "\nUserId	: " + words[2] + "\nURL	: " + words[4]
@@ -270,8 +282,8 @@ public class FileServiceImpl implements FileService {
 					}
 					for (int i = 0; i < 4; i++) {
 						if ((line = reader.readLine()) != null) {
-							if (line.contains("INFO") || line.contains("WARN") || line.contains("ERROR")
-									|| line.contains("DEBUG") || line.contains("FATAL") || line.contains("TRACE")) {
+							if (line.contains(infoLog) || line.contains(warnLog) || line.contains(errorLog)
+									|| line.contains(debugLog) || line.contains(fatalLog) || line.contains(traceLog)) {
 								nextLine = false;
 								break;
 							}
