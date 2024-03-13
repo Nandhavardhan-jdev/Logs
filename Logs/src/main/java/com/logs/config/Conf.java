@@ -22,14 +22,6 @@ public class Conf {
 	private String fatalLog;
 	@Value("${TraceLog}")
 	private String traceLog;
-	@Value("${SimpleAsyncTaskExecutor}")
-	private String simpleAsyncTaskExecutor;
-	@Value("${Scheduling}")
-	private String scheduling;
-	@Value("${Main}")
-	private String main;
-	@Value("${Setar}")
-	private String setar;
 
 	public String getLogLevel() {
 		return logLevel;
@@ -58,22 +50,5 @@ public class Conf {
 	public String getTraceLog() {
 		return traceLog;
 	}
-
-	public String getSimpleAsyncTaskExecutor() {
-		return simpleAsyncTaskExecutor;
-	}
-
-	public String getScheduling() {
-		return scheduling;
-	}
-
-	public String getMain() {
-		return main;
-	}
-
-	public String getSetar() {
-		return setar;
-	}
-	
 
 }

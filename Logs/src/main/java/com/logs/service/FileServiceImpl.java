@@ -221,77 +221,85 @@ public class FileServiceImpl implements FileService {
 	}
 
 	public void writeInFile(File file, BufferedWriter writer, FileDto fileDto) {
-		String logLevel = conf.getLogLevel();
 		String errorLog = conf.getErrorLog();
 		String infoLog = conf.getInfoLog();
 		String warnLog = conf.getWarnLog();
 		String debugLog = conf.getDebugLog();
 		String fatalLog = conf.getFatalLog();
 		String traceLog = conf.getTraceLog();
+		boolean fileName = true;
 		try {
 			BufferedReader reader = new BufferedReader(new FileReader(file));
-			writer.write(file.getName() + "\n--------------------------\n\n");
 			String line = reader.readLine();
 			while (line != null) {
-
+				
 				boolean nextLine = true;
-				if ((line.contains(conf.getSimpleAsyncTaskExecutor()) && line.contains(logLevel))
-						|| (line.contains(conf.getScheduling()) && line.contains(logLevel))
-						|| (line.contains(conf.getMain()) && line.contains(logLevel))) {
+				if (line.contains(conf.getLogLevel())) {
 					this.data = true;
-					String[] words = line.split(" ");
-					writer.write("Time	: " + words[0] + "\nThread	: " + words[1] + "\nError	: ");
-					for (int i = 5; i < words.length; i++) {
-						writer.write(words[i] + " ");
+					if (fileName) {
+						writer.write(file.getName() + "\n--------------------------\n\n");
 					}
-					for (int i = 0; i < 4; i++) {
-						if ((line = reader.readLine()) != null) {
-							if (line.contains(infoLog) || line.contains(warnLog) || line.contains(errorLog)
-									|| line.contains(debugLog) || line.contains(fatalLog) || line.contains(traceLog)) {
-								nextLine = false;
-								break;
-							}
-							writer.write("\n	" + line);
+					fileName = false;
+					String[] words = line.split("\\s+");
+					if(words[4].matches("-")) {
+//						System.out.println("thread");
+						writer.write("Time	: " + words[0] + "\nThread	: " + words[1] + "\nError	: ");
+						for (int i = 5; i < words.length; i++) {
+							writer.write(words[i] + " ");
 						}
+						for (int i = 0; i < 4; i++) {
+							if ((line = reader.readLine()) != null) {
+								if (line.contains(infoLog) || line.contains(warnLog) || line.contains(errorLog)
+										|| line.contains(debugLog) || line.contains(fatalLog) || line.contains(traceLog)) {
+									nextLine = false;
+									break;
+								}
+								writer.write("\n	" + line);
+							}
+						}
+						writer.write("\n\n");
 					}
-					writer.write("\n\n");
+					else if(words[7].matches("-")) {
+//						System.out.println("with userId");
+						writer.write("Time	: " + words[0] + "\nUserId	: " + words[2] + "\nURL	: " + words[4]
+								+ "\nError	: ");
+						for (int i = 8; i < words.length; i++) {
+							writer.write(words[i] + " ");
+						}
+						for (int i = 0; i < 4; i++) {
+							if ((line = reader.readLine()) != null) {
+								if (line.contains(infoLog) || line.contains(warnLog) || line.contains(errorLog)
+										|| line.contains(debugLog) || line.contains(fatalLog) || line.contains(traceLog)) {
+									nextLine = false;
+									break;
+								}
+								writer.write("\n	" + line);
+							}
+						}
+						writer.write("\n\n");
+					}
+					else if(words[6].matches("-")) {
+//						System.out.println("with out userId");
+						writer.write("Time	: " + words[0] + "\nUserId	:	\nURL	: " + words[3]
+								+ "\nError	: ");
+						for (int i = 7; i < words.length; i++) {
+							writer.write(words[i] + " ");
+						}
+						for (int i = 0; i < 4; i++) {
+							if ((line = reader.readLine()) != null) {
+								if (line.contains(infoLog) || line.contains(warnLog) || line.contains(errorLog)
+										|| line.contains(debugLog) || line.contains(fatalLog) || line.contains(traceLog)) {
+									nextLine = false;
+									break;
+								}
+								writer.write("\n	" + line);
+							}
+						}
+						writer.write("\n\n");
+					}
+					
 				}
 
-				else if (line.contains(conf.getSetar()) && line.contains(logLevel)) {
-					this.data = true;
-					String[] words = line.split(" ");
-					writer.write("Time	: " + words[0] + "\nUserId	: " + words[2] + "\nURL	: " + words[4]
-							+ "\nError	: ");
-					for (int i = 8; i < words.length; i++) {
-						writer.write(words[i] + " ");
-					}
-					for (int i = 0; i < 18; i++) {
-						writer.write("\n" + "	" + reader.readLine());
-					}
-					writer.write("\n\n");
-				}
-
-				else if ((line.contains(fileDto.getErrorPattern()) && line.contains(logLevel))
-						|| line.contains(logLevel)) {
-					this.data = true;
-					String[] words = line.split(" ");
-					writer.write("Time	: " + words[0] + "\nUserId	: " + words[2] + "\nURL	: " + words[4]
-							+ "\nError	: ");
-					for (int i = 8; i < words.length; i++) {
-						writer.write(words[i] + " ");
-					}
-					for (int i = 0; i < 4; i++) {
-						if ((line = reader.readLine()) != null) {
-							if (line.contains(infoLog) || line.contains(warnLog) || line.contains(errorLog)
-									|| line.contains(debugLog) || line.contains(fatalLog) || line.contains(traceLog)) {
-								nextLine = false;
-								break;
-							}
-							writer.write("\n	" + line);
-						}
-					}
-					writer.write("\n\n");
-				}
 				if (nextLine)
 					line = reader.readLine();
 
