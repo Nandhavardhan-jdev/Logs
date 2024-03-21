@@ -5,7 +5,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 
 @Configuration
-@PropertySource(value = {"normal.properties"})
+@PropertySource(value = {"classpath:normal.properties"})
 public class Conf {
 
 	@Value("${LogLevel}")

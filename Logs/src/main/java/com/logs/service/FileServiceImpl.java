@@ -137,7 +137,7 @@ public class FileServiceImpl implements FileService {
 		data = false;
 		String serverName = fileDto.getServerName();
 		String date = fileDto.getDate();
-		List<String> paths = searchFiles(serverName, date, fileDto);
+		List<String> paths = searchFiles(serverName, date, fileDto.getInputLoc());
 		try {
 			if (!paths.isEmpty()) {
 				File file = new File(
@@ -177,7 +177,7 @@ public class FileServiceImpl implements FileService {
 			BufferedWriter writer;
 			writer = new BufferedWriter(new FileWriter(file));
 			while (sIterator.hasNext()) {
-				List<String> paths = searchFiles(sIterator.next(), dIterator.next(), fileDto);
+				List<String> paths = searchFiles(sIterator.next(), dIterator.next(), fileDto.getInputLoc());
 				if (!paths.isEmpty()) {
 					paths.forEach(path -> writeInFile(new File(path), writer, fileDto));
 				}
@@ -199,17 +199,17 @@ public class FileServiceImpl implements FileService {
 		}
 	}
 
-	public List<String> searchFiles(String serverName, String date, FileDto fileDto) {
+	public List<String> searchFiles(String serverName, String date, String inputLoc) {
 		LocalDate currentDate = LocalDate.now();
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 		List<String> paths;
 		try {
 			if (date.contentEquals(currentDate.format(formatter))) {
-				paths = Files.list(Paths.get(fileDto.getInputLoc())).map(Path::toString)
+				paths = Files.list(Paths.get(inputLoc)).map(Path::toString)
 						.filter(file -> file.contains("titan-" + serverName + ".log")).collect(Collectors.toList());
 				paths.forEach(System.out::println);
 			} else {
-				paths = Files.list(Paths.get(fileDto.getInputLoc())).map(Path::toString)
+				paths = Files.list(Paths.get(inputLoc)).map(Path::toString)
 						.filter(file -> file.contains(serverName) && file.contains(date)).collect(Collectors.toList());
 				paths.forEach(System.out::println);
 			}
@@ -330,6 +330,27 @@ public class FileServiceImpl implements FileService {
 			throw new RuntimeException("mail not sended");
 		}
 
+	}
+	
+
+	public void downloadFiles(FileDto fileDto) {
+		String outputLoc = fileDto.getOutputLoc();
+		String inputLoc = "C:\\Users\\Admin\\Desktop\\Logs\\23 Feb logs 21 server";
+		Iterator<String> sIterator = fileDto.getServerNames().iterator();
+		Iterator<String> dIterator = fileDto.getDates().iterator();
+		
+		while (sIterator.hasNext()) {
+			List<String> paths = searchFiles(sIterator.next(), dIterator.next(), inputLoc);
+			paths.forEach(paths2 -> {
+				try {
+					String file = outputLoc + File.separator + new File(paths2).getName();
+					Files.copy(Paths.get(paths2), Paths.get(file));
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			});
+		}
+		
 	}
 
 }

@@ -15,4 +15,6 @@ public interface FileService {
 
 	InputStreamResource errorLevelMulti(FileDto fileDto);
 
+	void downloadFiles(FileDto fileDto);
+
 }

@@ -53,4 +53,10 @@ public class FileController {
 		return new ResponseEntity<>(isr, httpHeaders, HttpStatus.OK);
 	}
 	
+	@GetMapping("download/files")
+	public ResponseEntity<String> downloadFiles(@RequestBody FileDto fileDto){
+		fileService.downloadFiles(fileDto);
+		return new ResponseEntity<>("Files downloaded", HttpStatus.OK);
+	}
+	
 }
